@@ -1,0 +1,90 @@
+:root {
+  --font-primary: "Poppins", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+
+  /* Light theme defaults - Background & Text */
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --text-primary: #1a202c;
+  --text-secondary: #718096;
+  --border-primary: #e2e8f0;
+  --header-bg: rgba(99, 102, 241, 0.04);
+
+  /* Colors */
+  --accent-color: #6366f1;
+  --accent-light: #818cf8;
+  --accent-dark: #4f46e5;
+  --secondary-color: #ec4899;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
+
+  /* Scrollbar */
+  --scrollbar-thumb: #6366f1;
+  
+  /* Button styles */
+  --button-primary: #6366f1;
+  --button-primary-hover: #4f46e5;
+  --button-ghost-border: #e2e8f0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+
+  font-family: var(--font-primary);
+  font-weight: 400;
+
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.scrollbar {
+  scrollbar-width: thin; 
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 2px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 6px;
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none; 
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
