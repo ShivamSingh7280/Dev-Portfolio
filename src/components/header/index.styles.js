@@ -178,7 +178,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   mobileNavItem: {
-    fontSize: '1.5rem',
+    fontSize: '1.1rem',
     fontWeight: '500',
     color: 'var(--text-primary)',
     cursor: 'pointer',
