@@ -83,7 +83,6 @@ const Header = () => {
     document.body.style.overflow = menuOpen ? 'hidden' : 'auto';
   }, [menuOpen]);
 
-  console.log(isMobile, isTablet)
 
   return (
     <div
@@ -99,9 +98,8 @@ const Header = () => {
           <div className={classes.logoWrapper}
           style={
             isMobile ? {
-              height: '2.5rem',
-              width: '2.5rem',
-              fontSize: '0.5rem',
+              aspectRatio: '2/1',
+              fontSize: '3cqi',
             } : {}
           }
           >Dev</div>
