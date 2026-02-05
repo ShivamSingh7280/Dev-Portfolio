@@ -3,20 +3,21 @@ import { makeStyles } from "@mui/styles";
 const useStyles = makeStyles((theme) => ({
   githubHeatmapWrapper: {
     padding: "3rem 0",
-    width: '100vw',
-    borderRadius: "1.25rem",
+    width: "100vw",
     background: "var(--bg-secondary)",
     animation: "$fadeIn 0.6s ease forwards",
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   githubHeatmapInner: {
-    width: '80%',
-  },
+    width: "80%",
 
-  /* ---------------- Header ---------------- */
+    [theme?.breakpoints?.down("md")]: {
+      width: "92%",
+    },
+  },
 
   header: {
     display: "flex",
@@ -73,8 +74,6 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 
-  /* ---------------- Stats ---------------- */
-
   statsRow: {
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
@@ -104,123 +103,21 @@ const useStyles = makeStyles((theme) => ({
     color: "var(--text-secondary)",
   },
 
-  /* ---------------- Heatmap ---------------- */
-
   heatmapContainer: {
+    width: "100%",
     overflowX: "auto",
     paddingBottom: "0.5rem",
-    width: '100%'
   },
 
-  heatmap: {
-    width: '100%',
-    display: 'grid',
-    gridTemplateColumns: 'auto 1fr',
-    gap: '0.5rem',
-    gridAutoRows: 'auto',
+  calHeatmapWrapper: {
+    width: "100%",
+    minWidth: "760px",
   },
-
-  monthsContainer: {
-    gridColumn: '2',
-    display: 'grid',
-    gridAutoColumns: 'minmax(16px, auto)',
-    gap: '4px',
-    paddingBottom: '0.5rem',
-    marginBottom: '0.25rem',
-    borderBottom: '1px solid var(--border-primary)',
-    fontSize: '0.75rem',
-    fontWeight: '600',
-    color: 'var(--text-secondary)',
-    alignItems: 'end',
-    height: '1.5rem',
-  },
-
-  monthLabel: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    textAlign: 'center',
-  },
-
-  gridWrapper: {
-    gridColumn: '1 / -1',
-    display: "grid",
-    gridTemplateColumns: 'auto 1fr',
-    gap: "0.5rem",
-  },
-
-  days: {
-    display: "flex",
-    flexDirection: "column",
-    fontSize: "0.72rem",
-    color: "var(--text-secondary)",
-    justifyContent: "flex-start",
-    paddingRight: "0.25rem",
-    fontWeight: '500',
-    alignItems: 'center',
-  },
-
-  weeks: {
-    display: "grid",
-    gridAutoColumns: 'minmax(auto, auto)',
-    // gap: "4px",
-    gridAutoFlow: 'column',
-  },
-
-  week: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-
-  day: {
-    width: "13px",
-    height: "13px",
-    cursor: "pointer",
-    transition: "transform 0.2s ease",
-    borderRadius: '50%',
-
-    "&:hover": {
-      transform: "scale(1.3)",
-    },
-  },
-
-  /* ---------------- Levels ---------------- */
-
-  level0: { background: "#e5e7eb" },
-  level1: { background: "#9be9a8" },
-  level2: { background: "#40c463" },
-  level3: { background: "#30a14e" },
-  level4: { background: "#216e39" },
-
-  /* ---------------- Legend ---------------- */
-
-  legend: {
-    display: "flex",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    gap: "0.4rem",
-    marginTop: "1rem",
-    fontSize: "0.7rem",
-    color: "var(--text-secondary)",
-  },
-
-  /* ---------------- Animations ---------------- */
 
   "@keyframes fadeIn": {
-    from: {
-      opacity: 0,
-      transform: "translateY(6px)",
-    },
-    to: {
-      opacity: 1,
-      transform: "translateY(0)",
-    },
+    from: { opacity: 0, transform: "translateY(6px)" },
+    to: { opacity: 1, transform: "translateY(0)" },
   },
-  monthGap: {
-  marginLeft: '1rem', // GitHub-like spacing
-},
-
 }));
 
 export default useStyles;

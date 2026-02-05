@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import moment from "moment";
+import "cal-heatmap/cal-heatmap.css";
 
 // styles:
 import useStyles from "./index.styles";
@@ -7,27 +9,10 @@ import useStyles from "./index.styles";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-// credentials: 
+// credentials:
 import { GITHUB_USERNAME, GITHUB_TOKEN } from "../../config/config";
 
-
-
-const months = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-];
-
-const getLevel = (count) => {
-  if (count === 0) return 0;
-  if (count <= 2) return 1;
-  if (count <= 5) return 2;
-  if (count <= 8) return 3;
-  return 4;
-};
-
-const formatDate = (dateObj) => {
-  return dateObj.toISOString().split("T")[0];
-};
+const formatDate = (dateObj) => dateObj.toISOString().split("T")[0];
 
 const generateLastYearDates = () => {
   const data = [];
@@ -47,7 +32,6 @@ const generateLastYearDates = () => {
 };
 
 const GithubHeatmap = () => {
-
   const classes = useStyles();
 
   // media Query:
@@ -60,20 +44,23 @@ const GithubHeatmap = () => {
   const [data, setData] = useState(generateLastYearDates());
   const [loading, setLoading] = useState(true);
 
-  const _fetchProfiteData = async() => {
-      try {
-      
-        const URL = `https://api.github.com/users/${GITHUB_USERNAME}`;
-        const response = await fetch(URL);
-        const data = await response.json();
-        setProfile(data);
-      } catch(error) {
-          console.error("GitHub profile fetch failed:", error);
-      }
-  }
+  // cal refs
+  const calRef = useRef(null);
+  const calInstanceRef = useRef(null);
+
+  const _fetchProfileData = async () => {
+    try {
+      const URL = `https://api.github.com/users/${GITHUB_USERNAME}`;
+      const response = await fetch(URL);
+      const json = await response.json();
+      setProfile(json);
+    } catch (error) {
+      console.error("GitHub profile fetch failed:", error);
+    }
+  };
 
   useEffect(() => {
-    _fetchProfiteData();
+    _fetchProfileData();
   }, []);
 
   // Fetch commits and map them into daily counts:
@@ -82,17 +69,12 @@ const GithubHeatmap = () => {
       try {
         setLoading(true);
 
-        // Step 1: Build last year date map: 
         const baseData = generateLastYearDates();
         const dateMap = new Map();
         baseData.forEach((d) => dateMap.set(d.date, 0));
 
-        // Step 2: Fetch commits from GitHub Search API:
-        // NOTE: Search API is paginated. We'll fetch multiple pages.
-        // Max per_page = 100
-
         const perPage = 100;
-        const maxPages = 10; // 10 pages = 1000 commits max
+        const maxPages = 10;
 
         for (let page = 1; page <= maxPages; page++) {
           const res = await fetch(
@@ -101,7 +83,6 @@ const GithubHeatmap = () => {
               headers: {
                 Accept: "application/vnd.github.cloak-preview+json",
                 Authorization: `Bearer ${GITHUB_TOKEN}`,
-              
               },
             }
           );
@@ -110,11 +91,8 @@ const GithubHeatmap = () => {
 
           if (!json.items || json.items.length === 0) break;
 
-          // Step 3: Count commits by date (only last 1 year): 
-          
           json.items.forEach((commitItem) => {
             const commitDate = commitItem?.commit?.author?.date;
-
             if (!commitDate) return;
 
             const day = commitDate.split("T")[0];
@@ -124,11 +102,9 @@ const GithubHeatmap = () => {
             }
           });
 
-          // If less than perPage returned => last page
           if (json.items.length < perPage) break;
         }
 
-        // Step 4: Merge map back into array
         const finalData = baseData.map((d) => ({
           ...d,
           count: dateMap.get(d.date) || 0,
@@ -145,10 +121,132 @@ const GithubHeatmap = () => {
     fetchCommits();
   }, []);
 
-  const total = useMemo(
-    () => data.reduce((sum, d) => sum + d.count, 0),
-    [data]
-  );
+  // Render cal-heatmap
+  useEffect(() => {
+    if (!calRef.current) return;
+    if (!data || data.length === 0) return;
+    if (loading) return;
+
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        // ✅ Fix: Hard clear container to prevent double SVG in StrictMode
+        calRef.current.innerHTML = "";
+
+        // Destroy previous instance
+        if (calInstanceRef.current) {
+          calInstanceRef.current.destroy();
+          calInstanceRef.current = null;
+        }
+
+        const { default: CalHeatmap } = await import("cal-heatmap");
+        const { default: Tooltip } = await import("cal-heatmap/plugins/Tooltip");
+        const { default: CalendarLabel } = await import(
+          "cal-heatmap/plugins/CalendarLabel"
+        );
+
+        if (cancelled) return;
+
+        const heatData = data.map((d) => ({
+          date: d.date,
+          value: d.count,
+        }));
+
+        const cal = new CalHeatmap();
+
+        // GitHub-style alignment
+        const startDate = moment()
+          .subtract(1, "year")
+          .startOf("week")
+          .toDate();
+
+        await cal.paint(
+          {
+            itemSelector: calRef.current,
+
+            date: {
+              start: startDate,
+            },
+
+            range: 12,
+
+            domain: {
+              type: "month",
+              gutter: 18,
+              label: {
+                text: "MMM",
+                textAlign: "center",
+                position: "top",
+              },
+            },
+
+            subDomain: {
+              type: "day",
+              width: 13,
+              height: 13,
+              gutter: 4,
+              radius: 3,
+            },
+
+            data: {
+              source: heatData,
+              type: "json",
+              x: "date",
+              y: "value",
+            },
+
+            scale: {
+              color: {
+                type: "threshold",
+                range: ["#e5e7eb", "#9be9a8", "#40c463", "#30a14e", "#216e39"],
+                domain: [1, 3, 6, 10],
+              },
+            },
+          },
+          [
+            [
+              Tooltip,
+              {
+                text: (date, value) =>
+                  `${moment(date).format("MMM DD, YYYY")} : ${value || 0} commits`,
+              },
+            ],
+            [
+              CalendarLabel,
+              {
+                width: 30,
+                textAlign: "center",
+                text: () => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+                padding: [0, 0, 0, 0],
+              },
+            ],
+          ]
+        );
+
+        calInstanceRef.current = cal;
+      } catch (err) {
+        console.error("Failed to render cal-heatmap:", err);
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+
+      if (calInstanceRef.current) {
+        calInstanceRef.current.destroy();
+        calInstanceRef.current = null;
+      }
+
+      if (calRef.current) {
+        calRef.current.innerHTML = "";
+      }
+    };
+  }, [data, loading]);
+
+  const total = useMemo(() => data.reduce((sum, d) => sum + d.count, 0), [data]);
 
   const longestStreak = useMemo(() => {
     let max = 0;
@@ -166,55 +264,12 @@ const GithubHeatmap = () => {
     return max;
   }, [data]);
 
-  const weeks = useMemo(() => {
-    const result = [];
-    let prevMonth = null;
-
-    for (let i = 0; i < data.length; i += 7) {
-      const weekDays = data.slice(i, i + 7);
-      const firstDayOfWeek = new Date(weekDays[0].date);
-      const currentMonth = firstDayOfWeek.getMonth();
-
-      const isNewMonth = prevMonth !== null && currentMonth !== prevMonth;
-
-      result.push({
-        days: weekDays,
-        isNewMonth,
-      });
-
-      prevMonth = currentMonth;
-    }
-
-    return result;
-  }, [data]);
-
-  const monthPositions = useMemo(() => {
-    const positions = [];
-    let lastMonth = -1;
-
-    weeks.forEach((week, weekIndex) => {
-      const firstDay = new Date(week.days[0].date);
-      const currentMonth = firstDay.getMonth();
-
-      if (currentMonth !== lastMonth) {
-        positions.push({
-          month: months[currentMonth],
-          weekIndex,
-        });
-        lastMonth = currentMonth;
-      }
-    });
-
-    return positions;
-  }, [weeks]);
-
   return (
     <div
       className={classes.githubHeatmapWrapper}
       style={{ borderRadius: isMobile || isTablet ? 0 : "" }}
     >
       <div className={classes.githubHeatmapInner}>
-       
         {/* Header */}
         <div className={classes.header}>
           <div className={classes.headerLeft}>
@@ -261,66 +316,7 @@ const GithubHeatmap = () => {
 
         {/* Heatmap */}
         <div className={classes.heatmapContainer}>
-          <div className={classes.heatmap}>
-            {/* Month labels */}
-            <div className={classes.monthsContainer}>
-              {monthPositions.map((pos, idx) => (
-                <div
-                  key={`${pos.month}-${idx}`}
-                  className={classes.monthLabel}
-                  style={{
-                    gridColumn: `${pos.weekIndex + 2} / span 1`,
-                  }}
-                >
-                  {pos.month}
-                </div>
-              ))}
-            </div>
-
-            <div className={classes.gridWrapper}>
-              <div className={classes.days}>
-                <span>Sun</span>
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-              </div>
-
-              <div className={classes.weeks}>
-                {weeks.map((week, wi) => (
-                  <div
-                    key={wi}
-                    className={`${classes.week} ${
-                      week.isNewMonth ? classes.monthGap : ""
-                    }`}
-                  >
-                    {week.days.map((day, di) => {
-                      const level = getLevel(day.count);
-
-                      return (
-                        <div
-                          key={`${wi}-${di}`}
-                          title={`${day.date}: ${day.count} commits`}
-                          className={`${classes.day} ${classes[`level${level}`]}`}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div className={classes.legend}>
-          <span>Less</span>
-          {[0, 1, 2, 3, 4].map((l) => (
-            <div key={l} className={`${classes.day} ${classes[`level${l}`]}`} />
-          ))}
-          <span>More</span>
+          <div ref={calRef} className={classes.calHeatmapWrapper} />
         </div>
       </div>
     </div>
