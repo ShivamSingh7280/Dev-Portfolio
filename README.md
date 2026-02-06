@@ -1,16 +1,45 @@
-# React + Vite
+Shivam Singh – Developer Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Live Demo: https://shivamsingh7280.vercel.app
 
-Currently, two official plugins are available:
+A modern personal portfolio built with React, Material UI, Context API, and CalHeatmap - designed to showcase my skills, experience, and coding activity in a clean and responsive interface.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+About:
 
-## React Compiler
+I’m Shivam Singh, a Software Development Engineer with 2 years of professional experience. This portfolio highlights my projects, technologies I work with, and visualizes contribution activity using heatmaps to give a snapshot of my work patterns.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Tech Stack:
 
-## Expanding the ESLint configuration
+React – UI framework
+Material UI – Component design & theme
+Context API – State management(Mainly for dark & light theme)
+CalHeatmap – Contribution heatmap visualization
+Vite – Fast build tooling
+CSS / Responsive Design
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Features:
+
+* Clean, responsive UI built with Material UI components
+* Dark & light theme support
+* Activity heatmap showing coding contributions
+* Modular and scalable React architecture
+* Easily configurable with JSON or backend data
+
+Code Highlights:
+
+* Component-driven design
+* Context API for global state
+* Reusable UI with custom theming
+* Dynamic heatmap integration
+
+
+How to Run Locally:
+
+bash:
+
+git clone https://github.com/ShivamSingh7280/dev-portfolio.git
+cd dev-portfolio
+npm install
+npm run dev
+
+[1]: https://github.com/ShivamSingh7280/dev-portfolio/ "GitHub - ShivamSingh7280/dev-portfolio: This is my personal portfolio."
