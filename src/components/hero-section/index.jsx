@@ -53,7 +53,6 @@ const HeroSection = () => {
       });
       return;
     }
-
     window.open(link, "_blank", "noopener,noreferrer");
   };
 
@@ -91,7 +90,7 @@ const HeroSection = () => {
 
         <div className={classes.logoWrapper}>
           {
-            SOCIAL_MEDIA_LOGOS.map((item) => {
+            SOCIAL_MEDIA_LOGOS?.map((item) => {
               if (item.type === 'icon') {
                 const Icon = item.label;
                 return <Icon key={item.id} className={classes.socialIcon}
@@ -101,10 +100,11 @@ const HeroSection = () => {
               }
 
               if (item.type === 'component' && item.label === 'LeetCode') {
-                return <LeetCodeIcon key={item.id} className={classes.socialIcon}
-                  onClick={() => _handleSocialIconClick(item?.link, item?.name)}
-
-                />;
+                return (<span onClick={() => _handleSocialIconClick(item?.link, item?.name)}>
+                  <LeetCodeIcon key={item.id} className={classes.socialIcon}
+                  />
+                </span>
+                )
               }
 
               return null;
