@@ -177,7 +177,7 @@ const GithubHeatmap = () => {
               label: {
                 text: "MMM",
                 textAlign: "center",
-                position: "top",
+                position: "bottom",
               },
             },
 
@@ -212,15 +212,16 @@ const GithubHeatmap = () => {
                   `${moment(date).format("MMM DD, YYYY")} : ${value || 0} commits`,
               },
             ],
-            [
-              CalendarLabel,
-              {
-                width: 30,
-                textAlign: "center",
-                text: () => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-                padding: [0, 0, 0, 0],
-              },
-            ],
+            // [
+              // CalendarLabel,
+              // {
+              //   width: 30,
+              //   textAlign: "center",
+              //   justifyContent: "center",
+              //   text: () => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+              //   padding: [2, 3, 4, 0],
+              // },
+            // ],
           ]
         );
 
