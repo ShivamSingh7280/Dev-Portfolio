@@ -178,7 +178,7 @@ const GithubHeatmap = () => {
               gutter: 18,
               label: {
                 text: "MMM",
-                textAlign: "center",
+                textAlign: "middle",
                 position: "bottom",
               },
             },
