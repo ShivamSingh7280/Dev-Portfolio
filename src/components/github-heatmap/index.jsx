@@ -12,20 +12,23 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 // credentials:
 import { GITHUB_USERNAME, GITHUB_TOKEN } from "../../config/config";
 
-const formatDate = (dateObj) => dateObj.toISOString().split("T")[0];
+const formatDate = (dateObj) => {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const d = String(dateObj.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
 
 const generateLastYearDates = () => {
+
   const data = [];
-  const today = new Date();
+  const now = new Date();
 
-  for (let i = 365; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
+  const start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    data.push({
-      date: formatDate(date),
-      count: 0,
-    });
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    data.push({ date: formatDate(new Date(d)), count: 0 });
   }
 
   return data;
@@ -44,7 +47,7 @@ const GithubHeatmap = () => {
   const [data, setData] = useState(generateLastYearDates());
   const [loading, setLoading] = useState(true);
 
-  // cal refs
+  // cal refs:
   const calRef = useRef(null);
   const calInstanceRef = useRef(null);
 
@@ -52,7 +55,7 @@ const GithubHeatmap = () => {
     try {
       const URL = `https://api.github.com/users/${GITHUB_USERNAME}`;
       const response = await fetch(URL);
-      const json = await response.json();
+      const json = await response?.json();
       setProfile(json);
     } catch (error) {
       console.error("GitHub profile fetch failed:", error);
@@ -63,47 +66,48 @@ const GithubHeatmap = () => {
     _fetchProfileData();
   }, []);
 
-  // Fetch commits and map them into daily counts:
   useEffect(() => {
-    const fetchCommits = async () => {
+    const fetchContributions = async () => {
       try {
         setLoading(true);
 
+        const from = moment().subtract(1, "year").startOf("day").toISOString();
+        const to = moment().endOf("day").toISOString();
+
+        const query = `query contributions($login: String!, $from: DateTime!, $to: DateTime!) {\n  user(login: $login) {\n    contributionsCollection(from: $from, to: $to) {\n      contributionCalendar {\n        totalContributions\n        weeks {\n          contributionDays {\n            date\n            contributionCount\n          }\n        }\n      }\n    }\n  }\n}`;
+
+        const body = JSON.stringify({
+          query,
+          variables: { login: GITHUB_USERNAME, from, to },
+        });
+
+        const res = await fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${GITHUB_TOKEN}`,
+          },
+          body,
+        });
+
+        const json = await res.json();
+
+        const weeks =
+          json?.data?.user?.contributionsCollection?.contributionCalendar?.weeks || [];
+
         const baseData = generateLastYearDates();
+
         const dateMap = new Map();
         baseData.forEach((d) => dateMap.set(d.date, 0));
 
-        const perPage = 100;
-        const maxPages = 10;
-
-        for (let page = 1; page <= maxPages; page++) {
-          const res = await fetch(
-            `https://api.github.com/search/commits?q=author:${GITHUB_USERNAME}&per_page=${perPage}&page=${page}`,
-            {
-              headers: {
-                Accept: "application/vnd.github.cloak-preview+json",
-                Authorization: `Bearer ${GITHUB_TOKEN}`,
-              },
-            }
-          );
-
-          const json = await res.json();
-
-          if (!json.items || json.items.length === 0) break;
-
-          json.items.forEach((commitItem) => {
-            const commitDate = commitItem?.commit?.author?.date;
-            if (!commitDate) return;
-
-            const day = commitDate.split("T")[0];
-
-            if (dateMap.has(day)) {
-              dateMap.set(day, dateMap.get(day) + 1);
+        weeks.forEach((week) => {
+          week.contributionDays.forEach((day) => {
+            const date = day.date;
+            if (dateMap.has(date)) {
+              dateMap.set(date, (dateMap.get(date) || 0) + (day.contributionCount || 0));
             }
           });
-
-          if (json.items.length < perPage) break;
-        }
+        });
 
         const finalData = baseData.map((d) => ({
           ...d,
@@ -112,16 +116,15 @@ const GithubHeatmap = () => {
 
         setData(finalData);
       } catch (err) {
-        console.error("GitHub commit fetch failed:", err);
+        console.error("GitHub contributions fetch failed:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCommits();
+    fetchContributions();
   }, []);
 
-  // Render cal-heatmap
   useEffect(() => {
     if (!calRef.current) return;
     if (!data || data.length === 0) return;
@@ -131,10 +134,9 @@ const GithubHeatmap = () => {
 
     const run = async () => {
       try {
-        // ✅ Fix: Hard clear container to prevent double SVG in StrictMode
+
         calRef.current.innerHTML = "";
 
-        // Destroy previous instance
         if (calInstanceRef.current) {
           calInstanceRef.current.destroy();
           calInstanceRef.current = null;
@@ -155,9 +157,9 @@ const GithubHeatmap = () => {
 
         const cal = new CalHeatmap();
 
-        // GitHub-style alignment
         const startDate = moment()
-          .subtract(1, "year")
+          .subtract(10, "months")
+          .startOf("month")
           .startOf("week")
           .toDate();
 
@@ -212,16 +214,17 @@ const GithubHeatmap = () => {
                   `${moment(date).format("MMM DD, YYYY")} : ${value || 0} commits`,
               },
             ],
-            // [
-              // CalendarLabel,
-              // {
-              //   width: 30,
-              //   textAlign: "center",
-              //   justifyContent: "center",
-              //   text: () => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-              //   padding: [2, 3, 4, 0],
-              // },
-            // ],
+            [
+              CalendarLabel,
+              {
+                position: 'left',
+                key: 'left',
+                text: () => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                textAlign: 'end',
+                width: 40,
+                padding: [0, 5, 0, 0],
+              },
+            ],
           ]
         );
 
