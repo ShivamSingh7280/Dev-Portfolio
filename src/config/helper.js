@@ -56,7 +56,7 @@ export const SOCIAL_MEDIA_LOGOS = [
 
 export const ABOUT_ME_INTRODUCTION_TEXT = "I’m Shivam Singh, a full-stack developer focused on building reliable, scalable web systems. I work primarily with React and Node.js, enjoy designing clean APIs, and care deeply about code quality, performance, and maintainability. I like solving real problems and shipping software that holds up in production."
 
-export const RESUME_LINK = 'https://drive.google.com/file/d/1Cb0AFMMxH2RicMOt00NYCMAmFrUuQG8m/view?usp=drive_link';
+export const RESUME_LINK = 'https://drive.google.com/file/d/1m5lufF4-thGbau-8U2QlPAPCAr-YCulr/view?usp=sharing';
 
 export const EXPERIENCES = [
   {
