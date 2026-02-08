@@ -21,8 +21,8 @@ export const NAVIGATION_DATA = [
   { id: 2, label: 'About', link: '#about' },
   { id: 3, label: 'Work Experience', link: '#experience' },
   {id: 4, label: 'Certifications', link: '#certifications' },
-  { id: 5, label: 'Projects', link: '#projects' },
   { id: 6, label: 'Skills', link: '#skills' },
+  { id: 5, label: 'Projects', link: '#projects' },
   { id: 7, label: 'Contact', link: '#contact' },
 ];
 
